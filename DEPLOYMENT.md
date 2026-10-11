@@ -1,6 +1,6 @@
 # Publikasi KBMLeague ke GitHub Pages
 
-Domain: **https://league.karyabintangmandiri.com**.
+Domain: **https://kbmleague.my.id**.
 
 ## 1. Apa yang sudah disiapkan
 
@@ -22,36 +22,40 @@ GitHub Pages hanya menyajikan frontend. Laravel, database, dan gambar upload har
 4. Setelah branch `gh-pages` terbentuk, buka **Settings → Pages**.
 5. Pilih **Source: Deploy from a branch**.
 6. Pilih **Branch: gh-pages**, **Folder: /(root)**, lalu **Save**.
-7. Masukkan **Custom domain: league.karyabintangmandiri.com**, lalu **Save**.
+7. Masukkan **Custom domain: kbmleague.my.id**, lalu **Save**.
 
 Jangan memilih `main` sebagai branch website: branch tersebut berisi source yang membutuhkan build. File CNAME saja tidak menggantikan pengaturan Custom domain pada Pages.
 
 ## 3. Atur DNS domain
 
-Pada panel penyedia DNS untuk `karyabintangmandiri.com`, gunakan:
+Pada panel penyedia DNS untuk `kbmleague.my.id`, buat empat record A pada domain utama:
 
-| Field | Nilai |
-| --- | --- |
-| Type | CNAME |
-| Name / Host | league |
-| Target / Value | KH-kemal.github.io |
-| TTL | Default penyedia |
+| Type | Name / Host | Value |
+| --- | --- | --- |
+| A | @ | 185.199.108.153 |
+| A | @ | 185.199.109.153 |
+| A | @ | 185.199.110.153 |
+| A | @ | 185.199.111.153 |
 
-Target tidak memakai `https://`, nama repository, atau path. Jika ada record lain pada host `league` yang bertentangan, sesuaikan record host tersebut. Record domain utama dan subdomain lain tidak perlu diubah.
+TTL dapat memakai default penyedia. Sebagai alternatif, gunakan ALIAS/ANAME untuk domain utama menuju `KH-kemal.github.io` jika penyedia mendukungnya. Jangan memakai CNAME biasa pada domain utama jika DNS provider tidak mendukung CNAME flattening.
 
-Jika DNS menggunakan proxy, gunakan mode DNS-only saat verifikasi awal GitHub Pages. Periksa hasil DNS setelah penyimpanan:
+Opsional: buat CNAME `www` menuju `KH-kemal.github.io` agar www.kbmleague.my.id dapat diarahkan oleh GitHub ke domain utama.
+
+Sesuaikan record A/AAAA domain utama yang bertentangan dengan GitHub Pages. Jangan menghapus record MX/TXT email. Jika menggunakan proxy, gunakan mode DNS-only untuk verifikasi awal.
+
+Periksa DNS setelah penyimpanan:
 
 ```powershell
-Resolve-DnsName league.karyabintangmandiri.com -Type CNAME
+Resolve-DnsName kbmleague.my.id -Type A
 ```
 
-Hasil yang diharapkan mengarah ke `KH-kemal.github.io`. Propagasi DNS dan tersedianya opsi HTTPS dapat memerlukan hingga 24 jam.
+Hasil yang diharapkan adalah IP GitHub Pages di atas. Propagasi DNS dan sertifikat HTTPS dapat memerlukan hingga 24 jam. Simpan Custom domain di GitHub Pages terlebih dahulu sebelum mengarahkan DNS.
 
 ## 4. Aktifkan HTTPS
 
 1. Tunggu pemeriksaan DNS pada **Settings → Pages** berhasil.
 2. Tunggu sertifikat tersedia, kemudian aktifkan **Enforce HTTPS**.
-3. Buka `https://league.karyabintangmandiri.com`.
+3. Buka `https://kbmleague.my.id`.
 
 Jika gagal, periksa deployment di Actions, record CNAME, record host yang bertentangan, dan status sertifikat. Menyimpan Custom domain tidak otomatis mengubah DNS pada penyedia domain.
 
@@ -60,9 +64,9 @@ Jika gagal, periksa deployment di Actions, record CNAME, record host yang berten
 1. Deploy Laravel dan database ke layanan yang mendukung PHP/Laravel.
 2. Pastikan API memiliki URL HTTPS publik dan route `/api` dapat diakses.
 3. Atur `APP_URL` backend ke alamat backend sebenarnya. Jalankan migrasi secara aman dan `php artisan storage:link`; pastikan URL logo/foto memakai HTTPS.
-4. Atur CORS backend untuk mengizinkan origin `https://league.karyabintangmandiri.com`, metode API, serta header `Authorization` dan `Content-Type`.
+4. Atur CORS backend untuk mengizinkan origin `https://kbmleague.my.id`, metode API, serta header `Authorization` dan `Content-Type`.
 5. Di repository frontend, buka **Settings → Secrets and variables → Actions → Variables**.
-6. Tambah repository variable **VITE_API_BASE_URL** dengan URL API sebenarnya, termasuk `/api`. Contoh ilustratif: `https://api.karyabintangmandiri.com/api`; alamat tersebut belum diasumsikan tersedia.
+6. Tambah repository variable **VITE_API_BASE_URL** dengan URL API sebenarnya, termasuk `/api`. Contoh ilustratif: `https://api.kbmleague.my.id/api`; alamat tersebut belum diasumsikan tersedia.
 7. Jalankan ulang workflow **Build frontend to gh-pages**. Variabel Vite masuk saat build, sehingga perubahan nilai memerlukan build baru.
 8. Uji data publik, registrasi/login, akses admin, upload gambar, dan QR melalui HTTPS.
 

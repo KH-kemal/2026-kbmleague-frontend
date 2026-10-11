@@ -55,5 +55,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./dist
-          cname: league.karyabintangmandiri.com
+          cname: kbmleague.my.id
           enable_jekyll: false

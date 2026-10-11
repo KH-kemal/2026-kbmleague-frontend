@@ -21,7 +21,7 @@ Pengunjung dapat membuka `/`, `/teams`, `/players`, `/fixtures`, `/league-table`
 
 ## Deployment ke domain
 
-Lihat [DEPLOYMENT.md](DEPLOYMENT.md) untuk build otomatis ke branch `gh-pages`, pengaturan `league.karyabintangmandiri.com`, DNS, HTTPS, dan koneksi backend produksi.
+Lihat [DEPLOYMENT.md](DEPLOYMENT.md) untuk build otomatis ke branch `gh-pages`, pengaturan `kbmleague.my.id`, DNS, HTTPS, dan koneksi backend produksi.
 
 Backend belum di-hosting. Frontend produksi tanpa `VITE_API_BASE_URL` tidak mengirim request ke localhost; data dan login membutuhkan backend HTTPS.
 
