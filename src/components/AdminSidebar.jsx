@@ -1,13 +1,12 @@
 ﻿import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Shield, Users, CalendarDays, BarChart3, LogOut, Sun, Moon, Menu, X, QrCode, ArrowUpRight, Trophy } from 'lucide-react';
+import { LayoutDashboard, Shield, Users, CalendarDays, LogOut, Sun, Moon, Menu, X, QrCode, ArrowUpRight, Trophy } from 'lucide-react';
 import api from '../services/api';
 const menu = [
   { name: 'Dashboard', path: 'dashboard', icon: LayoutDashboard },
   { name: 'Tim & klub', path: 'teams', icon: Shield },
   { name: 'Pemain', path: 'players', icon: Users },
   { name: 'Pertandingan', path: 'fixtures', icon: CalendarDays },
-  { name: 'Statistik pemain', path: 'player-stats', icon: BarChart3 },
   { name: 'Screening QR', path: 'screening', icon: QrCode },
 ];
 export default function AdminSidebar({ theme, toggleTheme }) {
@@ -29,7 +28,7 @@ export default function AdminSidebar({ theme, toggleTheme }) {
         const active = pathname.split('/')[2] === path;
         return <Link key={path} to={`/admin/${path}`} aria-current={active ? 'page' : undefined} className={active ? 'active' : ''} onClick={() => setMobileOpen(false)}><Icon size={19} /><span>{name}</span>{active && <span className="admin-active-dot" />}</Link>;
       })}</nav>
-      <div className="admin-sidebar-note"><Shield size={20} /><strong>Di balik setiap laga hebat.</strong><p>Kelola tim, jadwal, dan performa dalam satu tempat.</p><Link to="/" onClick={() => setMobileOpen(false)}>Jelajahi kompetisi <ArrowUpRight size={15} /></Link></div>
+      <div className="admin-sidebar-note"><Shield size={20} /><strong>Di balik setiap laga hebat.</strong><p>Kelola tim, jadwal, dan identitas pemain dalam satu tempat.</p><Link to="/" onClick={() => setMobileOpen(false)}>Jelajahi kompetisi <ArrowUpRight size={15} /></Link></div>
       <div className="admin-sidebar-bottom"><button onClick={toggleTheme}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}<span>{theme === 'dark' ? 'Beralih ke mode terang' : 'Beralih ke mode gelap'}</span></button><div className="admin-account"><div className="admin-avatar">{(user.name || 'A').slice(0, 1).toUpperCase()}</div><div className="min-w-0 flex-1"><strong>{user.name || 'Administrator'}</strong><span>Administrator</span></div><button onClick={logout} title="Keluar" aria-label="Keluar dari akun"><LogOut size={18} /></button></div></div>
     </aside>
   </>;

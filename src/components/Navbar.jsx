@@ -2,7 +2,7 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Trophy, Sun, Moon, Menu, X, LogOut, ArrowUpRight } from 'lucide-react';
 import api from '../services/api';
-const links = [['/', 'Beranda'], ['/teams', 'Tim'], ['/players', 'Pemain'], ['/fixtures', 'Jadwal & skor'], ['/league-table', 'Klasemen'], ['/leaderboard', 'Leaderboard']];
+const links = [['/', 'Beranda'], ['/teams', 'Tim'], ['/players', 'Pemain'], ['/fixtures', 'Jadwal & skor'], ['/league-table', 'Klasemen']];
 export default function Navbar({ theme, toggleTheme }) {
   const [open, setOpen] = useState(false);
   const [profile, setProfile] = useState(false);

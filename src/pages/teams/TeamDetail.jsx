@@ -1,6 +1,7 @@
+import PlayerCard from '../../components/PlayerCard';
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar, Users, Trophy, Shield, ArrowLeft } from 'lucide-react';
+import { Calendar, Users, ArrowLeft } from 'lucide-react';
 import api from '../../services/api';
 
 export default function TeamDetail() {
@@ -12,32 +13,18 @@ export default function TeamDetail() {
   const [error, setError] = useState(null);
 
 
-  async function fetchTeamData() {
-    try {
-      setLoading(true);
-      const [resTeam, resPlayers, resFixtures] = await Promise.all([
-        api.get(`/teams/${id}`),
-        api.get('/players'),
-        api.get('/fixtures')
-      ]);
-      
-      setTeam(resTeam.data);
-      setSquad(resPlayers.data.filter((p) => p.team_id === Number(id)));
-      setFixtures(
-        resFixtures.data.filter(
-          (f) => f.home_team_id === Number(id) || f.away_team_id === Number(id)
-        )
-      );
-      setError(null);
-    } catch (err) {
-      setError('Gagal memuat detail klub.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    fetchTeamData();
+    let active = true;
+    Promise.all([api.get(`/teams/${id}`), api.get('/players', { params: { team_id: id } }), api.get('/fixtures')])
+      .then(([resTeam, resPlayers, resFixtures]) => {
+        if (!active) return;
+        setTeam(resTeam.data);
+        setSquad(resPlayers.data);
+        setFixtures(resFixtures.data.filter(f => f.home_team_id === Number(id) || f.away_team_id === Number(id)));
+        setError(null);
+      }).catch(() => { if (active) setError('Gagal memuat detail klub.'); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, [id]);
 
   const formatDate = (dateString) => {
@@ -64,14 +51,8 @@ export default function TeamDetail() {
     return { label: 'DRAW', color: 'bg-slate-500/10 text-slate-600 dark:text-slate-300 border-slate-500/20' };
   };
 
-  const groupedSquad = {
-    Forward: squad.filter((p) => p.position === 'Forward'),
-    Midfielder: squad.filter((p) => p.position === 'Midfielder'),
-    Defender: squad.filter((p) => p.position === 'Defender'),
-    Goalkeeper: squad.filter((p) => p.position === 'Goalkeeper'),
-  };
 
-  if (loading) {
+  if (loading || (!error && team && String(team.id) !== id)) {
     return (
       <div className="text-center py-20">
         <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -141,43 +122,7 @@ export default function TeamDetail() {
             Belum ada pemain yang terdaftar di klub ini.
           </div>
         ) : (
-          <div className="space-y-8">
-            {Object.entries(groupedSquad).map(([position, players]) => (
-              players.length > 0 && (
-                <div key={position}>
-                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-4 border-l-4 border-primary pl-3">
-                    {position}s ({players.length})
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {players.map((player) => (
-                      <Link
-                        key={player.id}
-                        to={`/players/${player.id}`}
-                        className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 hover:border-primary/50 hover:shadow-md hover:shadow-primary/5 rounded-2xl p-4 flex items-center space-x-4 transition-all group"
-                      >
-                        {player.photo ? (
-                          <img src={player.photo} alt={player.name} className="w-14 h-14 rounded-xl bg-slate-50 dark:bg-slate-800 object-cover shrink-0" />
-                        ) : (
-                          <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center font-black text-lg group-hover:bg-primary/20 group-hover:text-primary transition-colors shrink-0">
-                            #{player.jersey_number}
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <span className="text-xs font-bold text-amber-500">#{player.jersey_number}</span>
-                          <h4 className="font-bold text-slate-800 dark:text-white text-base truncate group-hover:text-primary transition-colors">
-                            {player.name}
-                          </h4>
-                          <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold block mt-0.5">
-                            Rating: <strong className="text-primary font-black">{Number(player.overall_rating).toFixed(2)}</strong>
-                          </span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )
-            ))}
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">{squad.map(player => <PlayerCard key={player.id} player={player} />)}</div>
         )}
       </div>
 

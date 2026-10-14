@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ArrowUpRight, ChevronRight } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
 import '../admin.css';
-const sections = { dashboard: 'Dashboard', teams: 'Tim & klub', players: 'Pemain', fixtures: 'Pertandingan', 'player-stats': 'Statistik pemain', screening: 'Screening pemain' };
+const sections = { dashboard: 'Dashboard', teams: 'Tim & klub', players: 'Pemain', fixtures: 'Pertandingan', screening: 'Screening pemain' };
 export default function AdminLayout() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const { pathname } = useLocation();

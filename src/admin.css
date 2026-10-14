@@ -77,3 +77,12 @@
 .admin-content .dark\:bg-slate-950\/80 { background:var(--admin-bg); }
 .admin-content .dark\:bg-slate-950\/60 { background:var(--admin-bg); }
 .admin-content .dark\:border-slate-800 { border-color:var(--admin-line); }
+
+/* Compact player table actions */
+.player-row-actions { display:flex; align-items:center; gap:8px; width:max-content; }
+.player-row-actions .player-action { display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; flex-shrink:0; border:1px solid currentColor; border-radius:12px; transition:background .18s,transform .18s; }
+.player-action--edit { color:#2563eb; background:#2563eb0d; }
+.player-action--card { color:#16816b; background:#16816b0d; }
+.player-action--qr { color:#b7790b; background:#b7790b0d; }
+.player-action--delete { color:#dc3545; background:#dc35450d; }
+.player-row-actions .player-action:hover:not(:disabled) { background:var(--admin-line); transform:translateY(-2px); }
