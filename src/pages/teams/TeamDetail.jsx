@@ -1,3 +1,6 @@
+import useFixtures from '../../hooks/useFixtures';
+import MatchDetails from '../../components/MatchDetails';
+import { Fragment } from 'react';
 import PlayerCard from '../../components/PlayerCard';
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
@@ -8,19 +11,20 @@ export default function TeamDetail() {
   const { id } = useParams();
   const [team, setTeam] = useState(null);
   const [squad, setSquad] = useState([]);
-  const [fixtures, setFixtures] = useState([]);
+  const { fixtures: allFixtures } = useFixtures();
+  const fixtures = allFixtures.filter(f => Number(f.home_team_id) === Number(id) || Number(f.away_team_id) === Number(id))
+    .sort((a, b) => (a.status === 'live' ? 0 : 1) - (b.status === 'live' ? 0 : 1) || new Date(b.match_date) - new Date(a.match_date));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
 
   useEffect(() => {
     let active = true;
-    Promise.all([api.get(`/teams/${id}`), api.get('/players', { params: { team_id: id } }), api.get('/fixtures')])
-      .then(([resTeam, resPlayers, resFixtures]) => {
+    Promise.all([api.get(`/teams/${id}`), api.get('/players', { params: { team_id: id } })])
+      .then(([resTeam, resPlayers]) => {
         if (!active) return;
         setTeam(resTeam.data);
         setSquad(resPlayers.data);
-        setFixtures(resFixtures.data.filter(f => f.home_team_id === Number(id) || f.away_team_id === Number(id)));
         setError(null);
       }).catch(() => { if (active) setError('Gagal memuat detail klub.'); })
       .finally(() => { if (active) setLoading(false); });
@@ -35,6 +39,7 @@ export default function TeamDetail() {
   };
 
   const getMatchBadge = (fixture) => {
+    if (fixture.status === 'live') return { label: 'LIVE', color: 'bg-primary/10 text-primary border-primary/20' };
     if (fixture.status !== 'completed') {
       return { label: 'SCHEDULED', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' };
     }
@@ -151,7 +156,7 @@ export default function TeamDetail() {
                   {fixtures.map((fixture) => {
                     const badge = getMatchBadge(fixture);
                     return (
-                      <tr key={fixture.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                      <Fragment key={fixture.id}><tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                         <td className="py-4 px-6">
                           <p className="font-bold text-slate-800 dark:text-white">{formatDate(fixture.match_date)}</p>
                           <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{fixture.venue || 'Stadion Utama'}</p>
@@ -166,7 +171,7 @@ export default function TeamDetail() {
                           </span>
                         </td>
                         <td className="py-4 px-6 text-center font-black text-amber-500 text-lg">
-                          {fixture.status === 'completed' ? `${fixture.home_score} : ${fixture.away_score}` : '- : -'}
+                          {fixture.status !== 'scheduled' ? `${fixture.home_score ?? 0} : ${fixture.away_score ?? 0}` : '- : -'}
                         </td>
                         <td className="py-4 px-6 text-right">
                           <span className={`px-3 py-1 rounded-xl text-xs font-bold border uppercase tracking-wider inline-block ${badge.color}`}>
@@ -174,6 +179,8 @@ export default function TeamDetail() {
                           </span>
                         </td>
                       </tr>
+                      {fixture.status !== 'scheduled' && <tr><td colSpan={4} className="px-6 pb-4"><MatchDetails fixture={fixture} /></td></tr>}
+                      </Fragment>
                     );
                   })}
                 </tbody>

@@ -6,8 +6,7 @@ import '../public.css';
 
 export default function PublicLayout() {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 
-      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    return localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
   });
 
   useEffect(() => {

@@ -23,7 +23,7 @@ export default function AdminPlayers() {
     const popup = window.open('', '_blank');
     if (!popup) { setError('Izinkan popup untuk mencetak kartu.'); return; }
     popup.document.title = `Kartu pemain - ${selected.name}`;
-    const style = popup.document.createElement('style'); style.textContent = 'body{font-family:Arial;padding:24px;color:#18342b}h1{font-size:24px}img{max-width:150px;max-height:150px}dl{display:grid;gap:12px}dt{color:#607269}dd{margin:4px 0 0;font-weight:bold}'; popup.document.head.append(style);
+    const style = popup.document.createElement('style'); style.textContent = 'body{font-family:Arial;padding:24px;color:#1b2d55}h1{font-size:24px}img{max-width:150px;max-height:150px}dl{display:grid;gap:12px}dt{color:#647086}dd{margin:4px 0 0;font-weight:bold}'; popup.document.head.append(style);
     popup.document.body.append(popup.document.importNode(cardRef.current, true));
     Promise.all([...popup.document.images].map(img => img.complete ? Promise.resolve() : new Promise(resolve => { img.onload = resolve; img.onerror = resolve; }))).then(() => { popup.focus(); popup.print(); });
   }

@@ -1,40 +1,22 @@
 import AdminListTools from '../../../components/AdminListTools';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import useFixtures from '../../../hooks/useFixtures';
 import { Link } from 'react-router-dom';
 import { Calendar, Plus, Edit3, Trash2 } from 'lucide-react';
 import api from '../../../services/api';
 
 export default function AdminFixtures() {
-  const [fixtures, setFixtures] = useState([]);
+  const { fixtures, loading, error } = useFixtures();
+  const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
-  const filtered = fixtures.filter(f => ([f.home_team?.name, f.away_team?.name, f.venue, f.status].join(' ') || '').toLowerCase().includes(search.trim().toLowerCase()));
-  const [loading, setLoading] = useState(true);
-
-
-  async function fetchFixtures() {
-    try {
-      setLoading(true);
-      const response = await api.get('/fixtures');
-      setFixtures(response.data);
-    } catch (err) {
-      console.error('Gagal memuat jadwal:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchFixtures();
-  }, []);
-
+  const filtered = fixtures.filter(f => (!statusFilter || f.status === statusFilter) && ([f.home_team?.name, f.away_team?.name, f.venue, f.status].join(' ') || '').toLowerCase().includes(search.trim().toLowerCase()))
+    .sort((a, b) => (a.status === 'live' ? 0 : 1) - (b.status === 'live' ? 0 : 1) || new Date(a.match_date) - new Date(b.match_date));
+  const [deleted, setDeleted] = useState([]);
+  const visible = filtered.filter(f => !deleted.includes(f.id));
   const handleDelete = async (id) => {
     if (window.confirm('Yakin ingin menghapus jadwal pertandingan ini?')) {
-      try {
-        await api.delete(`/fixtures/${id}`);
-        setFixtures(fixtures.filter((f) => f.id !== id));
-      } catch (err) {
-        alert('Gagal menghapus jadwal.');
-      }
+      try { await api.delete(`/fixtures/${id}`); setDeleted(previous => [...previous, id]); }
+      catch { alert('Gagal menghapus jadwal.'); }
     }
   };
 
@@ -61,7 +43,9 @@ export default function AdminFixtures() {
         </Link>
       </div>
 
-      <AdminListTools value={search} onChange={setSearch} count={filtered.length} total={fixtures.length} placeholder="Cari klub, venue, status..." />
+      {error && <p role="alert" className="text-amber-600 mb-4">{error}</p>}
+      <select aria-label="Filter status pertandingan" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="mb-4 rounded-xl p-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"><option value="">Semua status</option><option value="live">Berlangsung</option><option value="scheduled">Terjadwal</option><option value="completed">Selesai</option></select>
+      <AdminListTools value={search} onChange={setSearch} count={visible.length} total={fixtures.length} placeholder="Cari klub, venue, status..." />
       {loading ? (
         <div className="text-center py-20">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -85,8 +69,8 @@ export default function AdminFixtures() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-semibold">
-                {filtered.length === 0 && <tr><td colSpan={12}><div className="admin-empty">Tidak ada data yang sesuai. Tambahkan data baru atau ubah pencarian.</div></td></tr>}
-                {filtered.map((f) => (
+                {visible.length === 0 && <tr><td colSpan={12}><div className="admin-empty">Tidak ada data yang sesuai. Tambahkan data baru atau ubah pencarian.</div></td></tr>}
+                {visible.map((f) => (
                   <tr key={f.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <td className="py-4 px-6">
                       <p className="font-bold text-slate-800 dark:text-white">{formatDate(f.match_date)}</p>
@@ -96,15 +80,15 @@ export default function AdminFixtures() {
                       {f.home_team?.name} <span className="text-primary font-normal px-1">vs</span> {f.away_team?.name}
                     </td>
                     <td className="py-4 px-6 text-center font-black text-amber-500 dark:text-amber-400 text-base">
-                      {f.status === 'completed' ? `${f.home_score} : ${f.away_score}` : '- : -'}
+                      {f.status !== 'scheduled' ? `${f.home_score ?? 0} : ${f.away_score ?? 0}` : '- : -'}
                     </td>
                     <td className="py-4 px-6 text-center">
                       <span className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${
-                        f.status === 'completed' 
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' 
+                        f.status !== 'scheduled'
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
                           : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                       }`}>
-                        {f.status}
+                        {f.status === 'live' ? 'LIVE - Berlangsung' : f.status === 'completed' ? 'Selesai' : 'Terjadwal'}
                       </span>
                     </td>
                     <td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
@@ -112,7 +96,7 @@ export default function AdminFixtures() {
                         to={`/admin/fixtures/${f.id}/edit`}
                         className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg text-xs font-bold transition-all"
                       >
-                        <Edit3 size={12} /> Update Skor
+                        <Edit3 size={12} /> Hasil & Statistik
                       </Link>
                       <button
                         onClick={() => handleDelete(f.id)}

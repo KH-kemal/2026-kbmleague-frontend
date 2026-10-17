@@ -5,7 +5,7 @@ import AdminSidebar from '../components/AdminSidebar';
 import '../admin.css';
 const sections = { dashboard: 'Dashboard', teams: 'Tim & klub', players: 'Pemain', fixtures: 'Pertandingan', screening: 'Screening pemain' };
 export default function AdminLayout() {
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') === 'dark' ? 'dark' : 'light');
   const { pathname } = useLocation();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   useEffect(() => { document.documentElement.classList.toggle('dark', theme === 'dark'); localStorage.setItem('theme', theme); }, [theme]);

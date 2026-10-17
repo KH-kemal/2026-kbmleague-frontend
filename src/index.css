@@ -1,30 +1,33 @@
 @import "tailwindcss";
 @theme {
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-primary-light: #93c5fd;
-  --color-primary-tea: #dbeafe;
-  --color-primary-snow: #f8fbff;
+  --color-primary: #1b2d55;
+  --color-secondary: #1b2d55;
+  --color-accent: #9a3142;
+  --color-brand-base: #f6f8f5;
+  --color-primary-hover: #13213f;
+  --color-primary-light: #bbc9e4;
+  --color-primary-tea: #e8edf5;
+  --color-primary-snow: #f6f8f5;
 }
 @variant dark (&:where(.dark, .dark *));
 :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-synthesis: none; }
 body { margin: 0; }
-.auth-shell { min-height: 100vh; display: grid; place-items: center; padding: 2rem 1rem; background: radial-gradient(circle at 15% 20%, #dbeafe 0, transparent 35%), radial-gradient(circle at 85% 80%, #e0e7ff 0, transparent 35%), #f8fafc; }
-.auth-card { width: min(100%, 440px); padding: clamp(1.5rem, 5vw, 3rem); border-radius: 1.5rem; background: white; box-shadow: 0 24px 70px #0f172a18; border: 1px solid #e2e8f0; }
-.auth-brand { display: inline-block; font-weight: 800; font-size: 1.25rem; color: #1e3a8a; text-decoration: none; }
-.eyebrow { margin-top: 2rem; font-size: .7rem; letter-spacing: .18em; font-weight: 800; color: #2563eb; }
-.auth-card h1 { font-size: clamp(1.8rem, 5vw, 2.3rem); font-weight: 800; color: #0f172a; margin: .4rem 0; }
-.auth-intro { color: #64748b; font-size: .9rem; margin-bottom: 1.8rem; }
+.auth-shell { min-height: 100vh; display: grid; place-items: center; padding: 2rem 1rem; background: radial-gradient(circle at 15% 20%, #e8edf5 0, transparent 35%), radial-gradient(circle at 85% 80%, #f2e5e8 0, transparent 35%), #f6f8f5; }
+.auth-card { width: min(100%, 440px); padding: clamp(1.5rem, 5vw, 3rem); border-radius: 1.5rem; background: white; box-shadow: 0 24px 70px #1b2d5518; border: 1px solid #dfe3eb; }
+.auth-brand { display: inline-block; font-weight: 800; font-size: 1.25rem; color: #1b2d55; text-decoration: none; }
+.eyebrow { margin-top: 2rem; font-size: .7rem; letter-spacing: .18em; font-weight: 800; color: #1b2d55; }
+.auth-card h1 { font-size: clamp(1.8rem, 5vw, 2.3rem); font-weight: 800; color: #202124; margin: .4rem 0; }
+.auth-intro { color: #62666d; font-size: .9rem; margin-bottom: 1.8rem; }
 .auth-form { display: grid; gap: 1rem; }
-.auth-form label { display: grid; gap: .45rem; color: #334155; font-size: .83rem; font-weight: 700; }
-.auth-form input { width: 100%; padding: .8rem 1rem; border: 1px solid #cbd5e1; border-radius: .7rem; outline: none; background: #f8fafc; color: #0f172a; }
-.auth-form input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px #bfdbfe; }
-.auth-submit { margin-top: .4rem; padding: .85rem; background: #2563eb; color: white; border-radius: .7rem; font-weight: 800; cursor: pointer; }
-.auth-submit:hover { background: #1d4ed8; }
+.auth-form label { display: grid; gap: .45rem; color: #34373c; font-size: .83rem; font-weight: 700; }
+.auth-form input { width: 100%; padding: .8rem 1rem; border: 1px solid #cbd2df; border-radius: .7rem; outline: none; background: #f6f8f5; color: #1b2d55; }
+.auth-form input:focus { border-color: #1b2d55; box-shadow: 0 0 0 3px #e6c7ce; }
+.auth-submit { margin-top: .4rem; padding: .85rem; background: #9a3142; color: white; border-radius: .7rem; font-weight: 800; cursor: pointer; }
+.auth-submit:hover { background: #7e2636; }
 .auth-submit:disabled { opacity: .55; }
-.auth-error { color: #be123c; font-size: .85rem; }
-.auth-switch { margin-top: 1.5rem; text-align: center; color: #64748b; font-size: .85rem; }
-.auth-switch a { color: #2563eb; font-weight: 800; }
+.auth-error { color: #9a3142; font-size: .85rem; }
+.auth-switch { margin-top: 1.5rem; text-align: center; color: #62666d; font-size: .85rem; }
+.auth-switch a { color: #1b2d55; font-weight: 800; }
 /* Use a locally available UI font with crisp letterforms and consistent weights. */
 :root { --font-sans: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-family: var(--font-sans); }
 .public-shell, .admin-shell { font-family: var(--font-sans); font-weight: 400; line-height: 1.6; -webkit-font-smoothing: auto; -moz-osx-font-smoothing: auto; }
@@ -33,3 +36,19 @@ body { margin: 0; }
 .public-main .text-\[10px\], .admin-content .text-\[10px\] { font-size: .75rem; line-height: 1.5; }
 .public-main :is(input, select, textarea), .admin-content :is(input, select, textarea) { font-family: inherit; font-weight: 400; font-size: .9375rem; }
 .public-main :is(th, td), .admin-content :is(th, td) { font-variant-numeric: tabular-nums; }
+
+/* Frame the complete supplied artwork, including its LEAGUE lettering. */
+.brand-logo { display:inline-flex; position:relative; align-items:center; justify-content:center; width:46px; height:50px; flex-shrink:0; overflow:visible; vertical-align:middle; isolation:isolate; }
+.brand-logo::before { content:''; position:absolute; inset:8%; z-index:-1; border-radius:50%; background:radial-gradient(circle at 25% 30%,#1b2d5518,transparent 65%),radial-gradient(circle at 75% 70%,#9a314218,transparent 65%); filter:blur(5px); }
+.brand-logo svg { display:block; width:100%; height:100%; overflow:visible; filter:drop-shadow(0 2px 2px #1b2d5520); }
+.auth-brand { display:inline-flex; align-items:center; gap:12px; color:#1b2d55; }
+.auth-brand .brand-logo { width:50px; height:56px; }
+.auth-submit { transition:background .2s; }
+.auth-form input:focus { border-color:#9a3142; box-shadow:0 0 0 3px #9a31421a; }
+.auth-switch a { color:#9a3142; }
+
+.brand-wordmark { display:inline; font-weight:800; letter-spacing:-.7px; }
+.brand-wordmark-kbm { color:#1b2d55; }
+.brand-wordmark-league { color:#9a3142; }
+.dark .public-shell .brand-wordmark-kbm { color:#edf1f8; }
+.dark .public-shell .brand-wordmark-league { color:#f0adbd; }
