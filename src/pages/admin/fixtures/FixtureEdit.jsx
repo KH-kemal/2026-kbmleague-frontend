@@ -13,7 +13,7 @@ export default function FixtureEdit() {
   const [fixture, setFixture] = useState(null);
   const [players, setPlayers] = useState([]);
   const [rosterError, setRosterError] = useState('');
-  const [form, setForm] = useState({ home_score: 0, away_score: 0, status: 'completed', goals: [], match_statistics: emptyStatistics() });
+  const [form, setForm] = useState({ home_score: 0, away_score: 0, status: 'completed', goals: [], goalkeeper_saves: [], match_statistics: emptyStatistics() });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -25,25 +25,29 @@ export default function FixtureEdit() {
       if (!active) return;
       setFixture(data);
       setForm({ home_score: data.home_score ?? 0, away_score: data.away_score ?? 0, status: data.status,
-        goals: (data.goals || []).map(({ team_id, player_id, minute, added_time, player_name }) => ({ team_id, player_id, minute, added_time: added_time || '', player_name })),
+        goals: (data.goals || []).map(({ team_id, player_id, minute, added_time, player_name, type }) => ({ team_id, player_id, minute, added_time: added_time || '', player_name, type: type || 'regular' })),
+        goalkeeper_saves: (data.goalkeeper_saves || []).map(entry => ({ ...entry })),
         match_statistics: emptyStatistics(data.match_statistics),
       });
       try {
         const responses = await Promise.all([api.get('/players', { params: { team_id: data.home_team_id } }), api.get('/players', { params: { team_id: data.away_team_id } })]);
         if (active) setPlayers(responses.flatMap(response => response.data));
-      } catch { if (active) setRosterError('Daftar pemain gagal dimuat. Muat ulang halaman sebelum menambahkan gol.'); }
+      } catch { if (active) setRosterError('Daftar pemain gagal dimuat. Muat ulang halaman sebelum menambahkan gol atau saves kiper.'); }
     }).catch(() => { if (active) setError('Gagal memuat pertandingan. Silakan muat ulang halaman.'); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [id]);
 
-  const updateGoal = (index, key, value) => setForm(previous => ({ ...previous, goals: previous.goals.map((goal, i) => i === index ? { ...goal, [key]: value, ...(key === 'team_id' ? { player_id: '', player_name: '' } : {}) } : goal) }));
+  const updateGoal = (index, key, value) => setForm(previous => ({ ...previous, goals: previous.goals.map((goal, i) => i === index ? { ...goal, [key]: value, ...((key === 'team_id' || key === 'type') ? { player_id: '', player_name: '' } : {}) } : goal) }));
+  const updateKeeper = (index, key, value) => setForm(previous => ({ ...previous,
+    goalkeeper_saves: previous.goalkeeper_saves.map((entry, i) => i === index ? { ...entry, [key]: value, ...(key === 'team_id' ? { player_id: '', player_name: '' } : {}) } : entry),
+  }));
   const submit = async event => {
     event.preventDefault();
     setSaving(true); setError(''); setSaved('');
     const statistics = Object.fromEntries(['home', 'away'].map(side => [side, Object.fromEntries(MATCH_STATS.map(({ key }) => [key, form.match_statistics[side][key] === '' ? null : Number(form.match_statistics[side][key])]))]));
     try {
-      await api.put(`/fixtures/${id}`, { ...form, match_statistics: statistics, goals: form.goals.map(({ team_id, player_id, minute, added_time }) => ({ team_id: Number(team_id), player_id: Number(player_id), minute: Number(minute), added_time: added_time === '' ? 0 : Number(added_time) })) });
+      await api.put(`/fixtures/${id}`, { ...form, match_statistics: statistics, goals: form.goals.map(({ team_id, player_id, minute, added_time, type }) => ({ team_id: Number(team_id), player_id: Number(player_id), minute: Number(minute), added_time: added_time === '' ? 0 : Number(added_time), type: type || 'regular' })), goalkeeper_saves: form.goalkeeper_saves.map(({ team_id, player_id, saves }) => ({ team_id: Number(team_id), player_id: Number(player_id), saves: Number(saves) })) });
       if (form.status === 'completed') navigate('/admin/fixtures');
       else setSaved(form.status === 'live' ? 'Skor dan statistik LIVE tersimpan. Halaman penonton akan memperbarui otomatis.' : 'Data pertandingan terjadwal tersimpan.');
     } catch (err) { setError(Object.values(err.response?.data?.errors || {}).flat().join(' ') || err.response?.data?.message || 'Gagal menyimpan hasil pertandingan.'); }
@@ -76,19 +80,41 @@ export default function FixtureEdit() {
           </section>
           <section className="rounded-3xl p-5 sm:p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-3"><h2 className="text-xl font-extrabold"><span role="img" aria-label="Bola">⚽</span> Pencetak Gol</h2>
-              <button type="button" disabled={!!rosterError} onClick={() => setForm({ ...form, goals: [...form.goals, { team_id: fixture.home_team_id, player_id: '', minute: '', added_time: '' }] })} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary font-bold disabled:opacity-50"><Plus size={16} /> Tambah Gol</button>
+              <button type="button" disabled={!!rosterError} onClick={() => setForm({ ...form, goals: [...form.goals, { team_id: fixture.home_team_id, player_id: '', minute: '', added_time: '', type: 'regular' }] })} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary font-bold disabled:opacity-50"><Plus size={16} /> Tambah Gol</button>
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">Pilih pemain dan menit gol. Contoh tambahan waktu: menit 45, tambahan 2 untuk 45+2′. Skor di atas diisi terpisah.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">Pilih pemain dan menit gol. Contoh tambahan waktu: menit 45, tambahan 2 untuk 45+2′. Skor di atas diisi terpisah. Untuk gol bunuh diri, pilih tim penerima gol lalu pemain dari tim lawan. Adu penalti tidak dicatat di sini.</p>
             {rosterError && <p role="alert" className="text-amber-600 mb-3">{rosterError}</p>}
             {!form.goals.length && <p className="text-sm text-slate-400 py-4">Belum ada detail gol.</p>}
             <div className="space-y-4">{form.goals.map((goal, index) => {
-              const roster = players.filter(player => Number(player.team_id) === Number(goal.team_id));
-              return <div key={index} className="grid grid-cols-2 md:grid-cols-[1fr_1.5fr_5rem_5rem_auto] gap-3 items-end rounded-2xl bg-slate-50 dark:bg-slate-950 p-4">
+              const rosterTeam = goal.type === 'own_goal'
+                ? (Number(goal.team_id) === Number(fixture.home_team_id) ? fixture.away_team_id : fixture.home_team_id)
+                : goal.team_id;
+              const roster = players.filter(player => Number(player.team_id) === Number(rosterTeam));
+              return <div key={index} className="grid grid-cols-2 md:grid-cols-[1fr_1fr_1.5fr_5rem_5rem_auto] gap-3 items-end rounded-2xl bg-slate-50 dark:bg-slate-950 p-4">
                 <label className="text-xs font-bold space-y-2"><span>Tim</span><select aria-label={`Tim gol ${index + 1}`} className={inputClass} value={goal.team_id} onChange={e => updateGoal(index, 'team_id', e.target.value)}><option value={fixture.home_team_id}>{fixture.home_team?.name}</option><option value={fixture.away_team_id}>{fixture.away_team?.name}</option></select></label>
+                <label className="text-xs font-bold space-y-2"><span>Jenis gol</span><select aria-label={`Jenis gol ${index + 1}`} className={inputClass} value={goal.type || 'regular'} onChange={e => updateGoal(index, 'type', e.target.value)}><option value="regular">Gol biasa</option><option value="penalty">Penalti</option><option value="own_goal">Bunuh diri</option></select></label>
                 <label className="text-xs font-bold space-y-2"><span>Pencetak gol</span><select required aria-label={`Pencetak gol ${index + 1}`} className={inputClass} value={goal.player_id} onChange={e => updateGoal(index, 'player_id', e.target.value)}><option value="">Pilih pemain</option>{goal.player_id && !roster.some(p => Number(p.id) === Number(goal.player_id)) && <option value={goal.player_id}>{goal.player_name || 'Pemain tersimpan'}</option>}{roster.map(player => <option key={player.id} value={player.id}>#{player.jersey_number} {player.name}</option>)}</select></label>
                 <label className="text-xs font-bold space-y-2"><span>Menit</span><input required aria-label={`Menit gol ${index + 1}`} type="number" min="0" max="150" step="1" className={inputClass} value={goal.minute} onChange={e => updateGoal(index, 'minute', e.target.value)} /></label>
                 <label className="text-xs font-bold space-y-2"><span>Tambahan</span><input aria-label={`Tambahan waktu gol ${index + 1}`} type="number" min="0" max="30" step="1" placeholder="0" className={inputClass} value={goal.added_time} onChange={e => updateGoal(index, 'added_time', e.target.value)} /></label>
                 <button type="button" title="Hapus detail gol" aria-label={`Hapus gol ${index + 1}`} onClick={() => setForm({ ...form, goals: form.goals.filter((_, i) => i !== index) })} className="rounded-xl p-3 text-red-500 hover:bg-red-500/10 justify-self-end"><Trash2 size={18} /></button>
+              </div>;
+            })}</div>
+          </section>
+          <section className="rounded-3xl p-5 sm:p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <h2 className="text-xl font-extrabold">Penyelamatan Kiper</h2>
+              <button type="button" disabled={!!rosterError} onClick={() => setForm({ ...form, goalkeeper_saves: [...form.goalkeeper_saves, { team_id: fixture.home_team_id, player_id: '', saves: '' }] })} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary font-bold disabled:opacity-50"><Plus size={16} /> Tambah Kiper</button>
+            </div>
+            <p className="text-sm text-slate-500 mb-5">Pilih kiper dan isi jumlah saves selama pertandingan. Bisa lebih dari satu kiper per tim. Total rincian tidak boleh melebihi saves tim di bawah. Saves adu penalti tidak dihitung. Top Saves diperbarui saat status Selesai.</p>
+            {rosterError && <p role="alert" className="text-amber-600 mb-3">{rosterError}</p>}
+            {!form.goalkeeper_saves.length && <p className="text-sm text-slate-400 py-4">Belum ada rincian saves kiper.</p>}
+            <div className="space-y-4">{form.goalkeeper_saves.map((entry, index) => {
+              const roster = players.filter(player => Number(player.team_id) === Number(entry.team_id));
+              return <div key={index} className="grid grid-cols-2 md:grid-cols-[1fr_1.5fr_6rem_auto] gap-3 items-end rounded-2xl bg-slate-50 dark:bg-slate-950 p-4">
+                <label className="text-xs font-bold space-y-2"><span>Tim kiper</span><select aria-label={`Tim kiper ${index + 1}`} className={inputClass} value={entry.team_id} onChange={e => updateKeeper(index, 'team_id', e.target.value)}><option value={fixture.home_team_id}>{fixture.home_team?.name}</option><option value={fixture.away_team_id}>{fixture.away_team?.name}</option></select></label>
+                <label className="text-xs font-bold space-y-2"><span>Kiper</span><select required aria-label={`Kiper ${index + 1}`} className={inputClass} value={entry.player_id} onChange={e => updateKeeper(index, 'player_id', e.target.value)}><option value="">Pilih kiper</option>{entry.player_id && !roster.some(p => Number(p.id) === Number(entry.player_id)) && <option value={entry.player_id}>{entry.player_name || 'Kiper tersimpan'}</option>}{roster.map(player => <option key={player.id} value={player.id}>#{player.jersey_number} {player.name}</option>)}</select></label>
+                <label className="text-xs font-bold space-y-2"><span>Jumlah saves</span><input required aria-label={`Saves kiper ${index + 1}`} type="number" min="0" max="999" step="1" value={entry.saves} onChange={e => updateKeeper(index, 'saves', e.target.value)} className={inputClass} /></label>
+                <button type="button" aria-label={`Hapus kiper ${index + 1}`} onClick={() => setForm({ ...form, goalkeeper_saves: form.goalkeeper_saves.filter((_, i) => i !== index) })} className="rounded-xl p-3 text-red-500 hover:bg-red-500/10 justify-self-end"><Trash2 size={18} /></button>
               </div>;
             })}</div>
           </section>

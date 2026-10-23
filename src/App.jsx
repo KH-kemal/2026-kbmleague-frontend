@@ -11,6 +11,11 @@ import TeamDetail from './pages/teams/TeamDetail';
 import PlayerList from './pages/players/PlayerList';
 import PlayerDetail from './pages/players/PlayerDetail';
 import FixtureList from './pages/fixtures/FixtureList';
+import NewsList from './pages/news/NewsList';
+import NewsDetail from './pages/news/NewsDetail';
+import AdminNews from './pages/admin/news/AdminNews';
+import NewsForm from './pages/admin/news/NewsForm';
+import Statistics from './pages/statistics/Statistics';
 import LeagueTable from './pages/league-table/LeagueTable';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -46,6 +51,9 @@ export default function App() {
             <Route path="/players/:id" element={<PlayerDetail />} />
             <Route path="/fixtures" element={<FixtureList />} />
             <Route path="/league-table" element={<LeagueTable />} />
+            <Route path="/statistics" element={<Statistics />} />
+            <Route path="/news" element={<NewsList />} />
+            <Route path="/news/:id" element={<NewsDetail />} />
         </Route>
 
         <Route element={<ProtectedRoute />}>
@@ -59,6 +67,9 @@ export default function App() {
             <Route path="players/import" element={<PlayerImport />} />
             <Route path="players/create" element={<PlayerCreate />} />
             <Route path="players/:id/edit" element={<PlayerEdit />} />
+            <Route path="news" element={<AdminNews />} />
+            <Route path="news/create" element={<NewsForm />} />
+            <Route path="news/:id/edit" element={<NewsForm editing />} />
             <Route path="screening" element={<AdminScreening />} />
             <Route path="fixtures" element={<AdminFixtures />} />
             <Route path="fixtures/create" element={<FixtureCreate />} />

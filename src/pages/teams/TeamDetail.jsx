@@ -73,7 +73,7 @@ export default function TeamDetail() {
           {error || 'Klub tidak ditemukan.'}
         </div>
         <Link to="/teams" className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-bold shadow-md transition-colors">
-          <ArrowLeft size={16} /> Kembali ke Daftar Tim
+          <ArrowLeft size={16} /> Kembali ke Klub & Pemain
         </Link>
       </div>
     );
@@ -83,7 +83,7 @@ export default function TeamDetail() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 transition-colors duration-300">
       <div className="mb-6">
         <Link to="/teams" className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline transition-colors">
-          <ArrowLeft size={16} /> Kembali ke Daftar Tim
+          <ArrowLeft size={16} /> Kembali ke Klub & Pemain
         </Link>
       </div>
 

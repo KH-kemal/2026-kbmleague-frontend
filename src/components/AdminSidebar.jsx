@@ -1,13 +1,14 @@
 import BrandLogo from './BrandLogo';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Shield, Users, CalendarDays, LogOut, Sun, Moon, Menu, X, QrCode, ArrowUpRight } from 'lucide-react';
+import { LayoutDashboard, Shield, Users, CalendarDays, LogOut, Sun, Moon, Menu, X, QrCode, ArrowUpRight, Newspaper } from 'lucide-react';
 import api from '../services/api';
 const menu = [
   { name: 'Dashboard', path: 'dashboard', icon: LayoutDashboard },
   { name: 'Tim & klub', path: 'teams', icon: Shield },
   { name: 'Pemain', path: 'players', icon: Users },
   { name: 'Pertandingan', path: 'fixtures', icon: CalendarDays },
+  { name: 'Berita', path: 'news', icon: Newspaper },
   { name: 'Screening QR', path: 'screening', icon: QrCode },
 ];
 export default function AdminSidebar({ theme, toggleTheme }) {

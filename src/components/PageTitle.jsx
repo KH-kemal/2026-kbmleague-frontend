@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const sections = {
-  teams: 'Tim & Klub', players: 'Pemain', fixtures: 'Jadwal & Skor',
-  'league-table': 'Klasemen',
+  teams: 'Klub & Pemain', players: 'Pemain', fixtures: 'Jadwal & Skor',
+  'league-table': 'Klasemen', statistics: 'Statistik', news: 'Berita',
   dashboard: 'Dashboard', screening: 'Screening QR',
   login: 'Masuk', register: 'Daftar Akun',
 };

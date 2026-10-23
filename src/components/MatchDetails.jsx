@@ -15,7 +15,7 @@ export default function MatchDetails({ fixture }) {
             <li key={index} className="flex items-start gap-3 bg-slate-50 dark:bg-slate-950 rounded-xl p-3">
               <span role="img" aria-label="Gol" className="text-lg">⚽</span>
               <span className="font-extrabold tabular-nums text-primary whitespace-nowrap">{goal.minute}{goal.added_time ? `+${goal.added_time}` : ''}′</span>
-              <div className="min-w-0"><p className="font-bold break-words">{goal.player_name}</p><p className="text-xs text-slate-500 dark:text-slate-400">{Number(goal.team_id) === Number(fixture.home_team_id) ? fixture.home_team?.name : fixture.away_team?.name}</p></div>
+              <div className="min-w-0"><p className="font-bold break-words">{goal.player_name}{goal.type === 'own_goal' ? ' (bunuh diri)' : goal.type === 'penalty' ? ' (penalti)' : ''}</p><p className="text-xs text-slate-500 dark:text-slate-400">{Number(goal.team_id) === Number(fixture.home_team_id) ? fixture.home_team?.name : fixture.away_team?.name}</p></div>
             </li>
           ))}</ol> : <p className="text-slate-500 dark:text-slate-400">{fixture.status === 'live' && fixture.home_score === 0 && fixture.away_score === 0 ? 'Belum ada gol.' : 'Detail pencetak gol belum diisi.'}</p>}
         </section>
@@ -29,6 +29,7 @@ export default function MatchDetails({ fixture }) {
           </div>)}
         </section>
       </div>
+      {(fixture.goalkeeper_saves || []).length > 0 && <section className="mt-6"><h3 className="font-extrabold mb-3">Penyelamatan Kiper</h3><ul className="grid gap-2 sm:grid-cols-2">{fixture.goalkeeper_saves.map(entry => <li key={entry.player_id} className="rounded-xl bg-slate-50 dark:bg-slate-950 p-3 flex justify-between gap-3"><div><p className="font-bold">{entry.player_name}</p><p className="text-xs text-slate-500">{Number(entry.team_id) === Number(fixture.home_team_id) ? fixture.home_team?.name : fixture.away_team?.name}</p></div><span className="font-bold whitespace-nowrap">{entry.saves} saves</span></li>)}</ul></section>}
     </div>
   );
   return fixture.status === 'live' ? content : (

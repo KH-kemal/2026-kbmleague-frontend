@@ -22,7 +22,7 @@ export default function FixtureList() {
       const matches = fixtures.filter(match => match.status === group.status).sort((a, b) => group.status === 'completed' ? new Date(b.match_date) - new Date(a.match_date) : new Date(a.match_date) - new Date(b.match_date));
       return <section key={group.status} aria-label={group.title}>
         <div className="mb-4"><h2 className="text-xl font-black text-slate-800 dark:text-white">{group.title} <span className="text-sm text-slate-400 ml-2">{matches.length} laga</span></h2><p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{group.description}</p></div>
-        <div className={group.status === 'scheduled' && matches.length ? 'grid grid-cols-1 md:grid-cols-2 gap-px overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-700' : 'space-y-4'}>{matches.length ? matches.map(fixture => <FixtureCard key={fixture.id} fixture={fixture} />) : <p className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-6 text-slate-500 text-sm">Belum ada pertandingan {group.status === 'live' ? 'yang sedang berlangsung' : group.status === 'scheduled' ? 'mendatang' : 'selesai'}.</p>}</div>
+        <div className={group.status === 'scheduled' && matches.length ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-4'}>{matches.length ? matches.map(fixture => <FixtureCard key={fixture.id} fixture={fixture} />) : <p className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-6 text-slate-500 text-sm">Belum ada pertandingan {group.status === 'live' ? 'yang sedang berlangsung' : group.status === 'scheduled' ? 'mendatang' : 'selesai'}.</p>}</div>
       </section>;
     })}</div>}
   </div>;

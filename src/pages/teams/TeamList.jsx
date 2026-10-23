@@ -1,99 +1,82 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Trophy, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Trophy, Users, ArrowUpRight } from 'lucide-react';
 import api from '../../services/api';
+import DirectorySearch from '../../components/DirectorySearch';
+import PlayerCard from '../../components/PlayerCard';
 
 export default function TeamList() {
   const [teams, setTeams] = useState([]);
+  const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-
-  async function fetchTeams() {
-    try {
-      setLoading(true);
-      const response = await api.get('/teams');
-      setTeams(response.data);
-      setError(null);
-    } catch (err) {
-      setError('Gagal mengambil data tim dari server.');
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [error, setError] = useState('');
+  const [playerError, setPlayerError] = useState('');
+  const [params] = useSearchParams();
+  const query = (params.get('search') || '').trim();
+  const normal = value => String(value || '').trim().toLocaleLowerCase('id-ID');
+  const search = normal(query);
 
   useEffect(() => {
-    fetchTeams();
+    let active = true;
+    Promise.allSettled([api.get('/teams'), api.get('/players')]).then(([teamResult, playerResult]) => {
+      if (!active) return;
+      if (teamResult.status === 'fulfilled') setTeams(teamResult.value.data);
+      else setError('Gagal memuat klub. Silakan muat ulang halaman.');
+      if (playerResult.status === 'fulfilled') setPlayers(playerResult.value.data);
+      else setPlayerError('Pencarian pemain belum dapat dimuat. Pencarian nama klub tetap tersedia.');
+      setLoading(false);
+    });
+    return () => { active = false; };
   }, []);
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="public-page-intro flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 pb-6 border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-white flex items-center gap-3">
-            <Trophy className="text-primary" /> Daftar Tim & Klub
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5">Kompetisi liga sepak bola KBMLeague</p>
-        </div>
-        <span className="self-start sm:self-center px-4 py-2 bg-primary/10 border border-primary/20 text-primary font-bold rounded-xl text-sm transition-colors">
-          Total: {teams.length} Tim
-        </span>
-      </div>
+  const matchedPlayers = search ? players.filter(player =>
+    normal(player.name).includes(search) || normal(player.team?.name).includes(search)
+  ) : [];
+  const matchedTeamIds = new Set(matchedPlayers.map(player => String(player.team_id)));
+  const visibleTeams = search ? teams.filter(team =>
+    normal(team.name).includes(search) || matchedTeamIds.has(String(team.id))
+  ) : teams;
 
-      {loading && (
-        <div className="text-center py-20">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-500 dark:text-slate-400 text-sm font-semibold">Memuat data tim...</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 text-center text-red-500 dark:text-red-400 font-semibold max-w-lg mx-auto">
-          {error}
-        </div>
-      )}
-
-      {!loading && !error && teams.length === 0 && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center shadow-md transition-colors duration-300">
-          <p className="text-slate-500 dark:text-slate-400 text-lg font-medium">Belum ada data tim yang terdaftar.</p>
-        </div>
-      )}
-
-      {!loading && !error && teams.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {teams.map((team) => (
-            <Link
-              key={team.id}
-              to={`/teams/${team.id}`}
-              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 shadow-xs hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 flex flex-col justify-between block group"
-            >
-              <div className="flex items-center space-x-4">
-                {team.logo ? (
-                  <img
-                    src={team.logo}
-                    alt={team.name}
-                    className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 p-2 border border-slate-200/60 dark:border-slate-700/60 object-cover shadow-sm group-hover:scale-105 transition-transform"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-black text-xl group-hover:scale-105 transition-transform">
-                    {team.name.substring(0, 2).toUpperCase()}
-                  </div>
-                )}
-                <div>
-                  <h2 className="text-xl font-bold text-slate-800 dark:text-white tracking-wide transition-colors group-hover:text-primary">{team.name}</h2>
-                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 block mt-0.5">Est. {team.founded_year || '-'}</span>
-                </div>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-sm transition-colors duration-300">
-                <span className="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5">
-                  <Users size={16} className="text-slate-400" /> Jumlah Pemain
-                </span>
-                <span className="font-extrabold text-primary">{team.players_count || 0} Pemain</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+  return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="public-page-intro flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div><h1 className="text-3xl font-black flex items-center gap-3"><Trophy className="text-primary" /> Klub &amp; Pemain</h1>
+        <p className="text-sm text-slate-500 mt-2">Kenali klub peserta KBMLeague dan temukan pemain melalui skuad masing-masing klub.</p></div>
+      {!loading && !error && <span className="text-sm font-semibold whitespace-nowrap">{teams.length} klub terdaftar</span>}
     </div>
-  );
+
+    <DirectorySearch initialValue={query} />
+    {query && <div className="flex flex-wrap items-center gap-3 text-sm mt-4 mb-6">
+      <span>Hasil pencarian: <strong>{query}</strong></span><Link className="text-primary underline" to="/teams">Hapus pencarian</Link>
+    </div>}
+    {loading && <p role="status" className="py-12 text-center text-slate-500">Memuat klub dan pemain...</p>}
+    {error && <p role="alert" className="text-red-500 py-6">{error}</p>}
+    {!loading && playerError && <p role="alert" className="text-amber-600 my-5">{playerError}</p>}
+
+    {!loading && !error && <>
+      <section className="mt-8" aria-labelledby="club-results-title">
+        <h2 id="club-results-title" className="text-xl font-bold mb-5">{search ? 'Klub terkait (' + visibleTeams.length + ')' : 'Daftar klub'}</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {visibleTeams.map(team => <Link key={team.id} to={'/teams/' + team.id}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 hover:border-primary transition-colors group">
+            <div className="flex items-center gap-4">
+              {team.logo ? <img src={team.logo} alt="" loading="lazy" className="w-16 h-16 rounded-2xl object-contain" />
+                : <span className="w-16 h-16 shrink-0 rounded-2xl bg-primary/10 text-primary grid place-items-center font-black text-xl">{team.name.slice(0, 2).toUpperCase()}</span>}
+              <h3 className="text-xl font-bold break-words">{team.name}</h3>
+            </div>
+            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 text-sm">
+              <span className="flex items-center gap-2 text-slate-500"><Users size={16} />{team.players_count || 0} pemain</span>
+              <span className="flex items-center gap-1 font-semibold text-primary">Lihat skuad <ArrowUpRight size={16} /></span>
+            </div>
+          </Link>)}
+        </div>
+        {!visibleTeams.length && <p className="py-10 text-center text-slate-500">{search ? 'Tidak ada klub yang sesuai dengan pencarian.' : 'Belum ada klub terdaftar.'}</p>}
+      </section>
+
+      {search && !playerError && <section className="mt-10" aria-labelledby="player-results-title">
+        <h2 id="player-results-title" className="text-xl font-bold mb-5">Pemain ditemukan ({matchedPlayers.length})</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">{matchedPlayers.map(player => <PlayerCard key={player.id} player={player} />)}</div>
+        {!matchedPlayers.length && <p className="py-10 text-center text-slate-500">Tidak ada pemain yang sesuai dengan pencarian.</p>}
+      </section>}
+    </>}
+  </div>;
 }
