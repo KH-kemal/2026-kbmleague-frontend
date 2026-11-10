@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Trophy, Hand, CalendarDays, Goal, RefreshCw, ArrowUpRight, Medal } from 'lucide-react';
 import api from '../../services/api';
 import './statistics.css';
+import TeamStatistics from './TeamStatistics';
 
 function Portrait({ entry }) {
   return entry.photo ? <img src={entry.photo} alt="" loading="lazy" className="statistics-portrait" />
@@ -14,6 +15,7 @@ function PlayerName({ entry }) {
 
 export default function Statistics() {
   const [params, setParams] = useSearchParams();
+  const mode = params.get('view') === 'team' ? 'team' : 'individual';
   const teamId = params.get('team_id') || '';
   const tab = params.get('tab') === 'saves' ? 'saves' : 'scorers';
   const [teams, setTeams] = useState([]);
@@ -34,6 +36,7 @@ export default function Statistics() {
   }, []);
 
   useEffect(() => {
+    if (mode !== 'individual') return;
     let active = true;
     async function load() {
       try {
@@ -47,7 +50,7 @@ export default function Statistics() {
     load();
     const timer = setInterval(load, 30000);
     return () => { active = false; clearInterval(timer); };
-  }, [teamId, key]);
+  }, [teamId, key, mode]);
 
   function changeParam(name, value) {
     const next = new URLSearchParams(params);
@@ -57,10 +60,12 @@ export default function Statistics() {
 
   return <div className="statistics-page max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <section className="statistics-hero">
-      <div><span className="statistics-eyebrow">ANGKA DARI LAPANGAN</span><h1>Statistik KBMLeague</h1><p>Kenali pencetak gol dan penjaga gawang yang membuat perbedaan.</p></div>
+      <div><span className="statistics-eyebrow">ANGKA DARI LAPANGAN</span><h1>Statistik KBMLeague</h1><p>Kenali performa pemain dan ikuti perkembangan setiap tim.</p></div>
       <Trophy size={56} aria-hidden="true" />
     </section>
 
+    <div className="statistics-mode" role="group" aria-label="Kategori statistik"><button type="button" aria-pressed={mode === 'individual'} onClick={() => changeParam('view', '')}>Individu</button><button type="button" aria-pressed={mode === 'team'} onClick={() => { const next = new URLSearchParams(params); next.set('view', 'team'); next.delete('team_id'); setParams(next); }}>Tim</button></div>
+    {mode === 'team' ? <TeamStatistics teams={teams} teamError={teamError} teamId={teamId} onTeamChange={value => changeParam('team_id', value)} /> : <>
     <div className="statistics-toolbar">
       <div className="statistics-tabs" role="group" aria-label="Jenis peringkat">
         <button type="button" aria-pressed={tab === 'scorers'} onClick={() => changeParam('tab', '')}><Goal size={18} /> Top Scorer</button>
@@ -95,6 +100,7 @@ export default function Statistics() {
         </section>
       </> : <div className="statistics-empty"><Trophy size={36} /><h3>Belum ada {tab === 'saves' ? 'saves kiper' : 'gol pemain'} yang tercatat.</h3><p>Data muncul setelah admin mengisi rincian dan menyelesaikan pertandingan.</p><Link to="/fixtures">Lihat pertandingan <ArrowUpRight size={16} /></Link></div>}
 
+    </>}
     </>}
   </div>;
 }

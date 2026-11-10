@@ -292,7 +292,7 @@
 .public-footer .public-eyebrow { color:#b7c9e8; }
 .public-footer-top p,.public-footer-links,.public-footer-social-label { color:#c0cbe0; }
 .public-footer .public-brand { color:#fff; }
-.public-footer .public-brand :is(.brand-kbm,.brand-league) { color:inherit; }
+.public-footer .public-brand :is(.brand-wordmark-kbm,.brand-wordmark-league) { color:#fff; }
 .public-footer-links a { width:fit-content; padding-bottom:4px; border-bottom:1px solid transparent; transition:color .2s,border-color .2s; }
 .public-footer-links a:hover { color:#fff; border-bottom-color:#d77b8b; }
 .public-footer-cta h3 { color:#fff; }
@@ -307,3 +307,22 @@
   .public-footer-top > div + div { border-left:0; border-top:1px solid #ffffff1c; padding-left:0; padding-top:24px; }
   .public-footer-bottom { padding-top:18px; padding-bottom:22px; }
 }
+
+/* Keep upcoming teams against their badges in a more compact hero card. */
+.hero-match-card:not(.hero-live-card) { left:auto; width:calc(100% - 62px); max-width:440px; }
+.hero-match-teams { display:grid; grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr) auto; column-gap:8px; }
+.hero-match-teams strong { min-width:0; }
+.hero-match-teams strong:last-of-type { text-align:right; }
+@media(max-width:767px) { .hero-match-card:not(.hero-live-card) { width:calc(100% - 50px); } .hero-match-teams { column-gap:6px; } }
+
+/* Public menu headings share the navy Statistics card treatment. */
+.public-page-intro { padding:36px!important; border:0!important; border-radius:26px; background:linear-gradient(120deg,#1b2d55,#14213d); color:#fff; }
+.public-page-intro::before { display:none; }
+.public-page-intro h1 { color:#fff!important; font-size:clamp(27px,4vw,38px)!important; font-weight:850; margin:8px 0; letter-spacing:-1px; line-height:1.2; }
+.public-page-intro h1 > svg { color:#e4a0af; flex-shrink:0; width:30px; height:30px; }
+.public-page-intro p { color:#d0daec!important; max-width:520px; font-size:15px; line-height:1.65; }
+.public-page-intro > span { color:#edf1f8; padding:9px 14px; border:1px solid #ffffff30; background:#ffffff0c; border-radius:12px; }
+.public-page-intro select { background:#fff; color:#202124; border-color:#d9e1ef; max-width:100%; }
+.public-page-intro select option { background:#fff; color:#202124; }
+.public-page-intro > div { min-width:0; }
+@media(max-width:767px) { .public-page-intro { padding:26px!important; } .public-page-intro h1 { font-size:clamp(27px,4vw,38px)!important; } .public-page-intro p { font-size:14px; } }

@@ -4,6 +4,9 @@ export const MATCH_STATS = [
   { key: 'shots_on_target', label: 'Shots on Target' },
   { key: 'saves', label: 'Saves' },
   { key: 'fouls', label: 'Fouls' },
+  { key: 'passes', label: 'Passing', max: 9999 },
+  { key: 'successful_passes', label: 'Passing Success', max: 9999 },
+  { key: 'offsides', label: 'Offside' },
   { key: 'yellow_cards', label: 'Yellow Card', card: 'yellow' },
   { key: 'red_cards', label: 'Red Card', card: 'red' },
 ];

@@ -34,6 +34,6 @@ export default function FixtureCard({ fixture }) {
       <div className="fixture-result-team"><TeamMark team={fixture.away_team} /><strong>{away}</strong></div>
     </div>
     <p className="fixture-venue"><MapPin size={14} aria-hidden="true" />{fixture.venue || 'Venue belum ditentukan'}</p>
-    <div className="fixture-details"><MatchDetails fixture={fixture} /></div>
+    <div className="fixture-details"><MatchDetails fixture={fixture} showScoreboard={false} /></div>
   </article>;
 }
